@@ -1,6 +1,6 @@
 # encoding: utf-8
 #
-
+$use_picdiff = 1	# 0
 $fx_picdiff = 50
 
 $myurl = "http://192.168.0.100:8421"

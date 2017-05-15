@@ -18,6 +18,12 @@ class CameraController
 		row
 	end
 
+	def self.updateCameraOrogin(con, build_id, mac, carpos, opic, ohash)
+		con.query "UPDATE tb_camera_config set origin_pic='#{opic}', origin_hash='#{ohash}'
+					WHERE build_id='#{build_id}' and mac='#{mac}' and carpos='#{carpos}'"
+		con.query "commit"
+	end
+
 	def self.setCameraConfig(con, build_id, mac, win_type, window)
                   i=1
                 #$log1.info win_type
@@ -46,7 +52,7 @@ class CameraController
 				y = window[i-1][:y].to_s
 				carpos = window[i-1][:carpos]
 				opic = nil
-				opic = window[i-1][:opic].to_s if window[i-1][:opic]
+				#opic = window[i-1][:opic].to_s if window[i-1][:opic]
 			end
 	
 			rs = con.query "SELECT win_type FROM tb_camera_config 
@@ -85,13 +91,13 @@ class CameraController
 		origin_pic = 'NULL'
 		origin_pic = opic if opic
 		origin_hash = 'NULL'
-		if opic
+		if opic != nil
 			origin_hash = ImgBB::calculate_threshold(opic, 16)
 		end
 	
-		sql = "INSERT INTO tb_camera_config (build_id, mac, seq, carpos, x, y, win_type, origin_pic, origin_hash)
-			VALUES ('#{build_id}', '#{mac}', #{seq}, '#{carpos}', '#{x}', '#{y}', '#{win_type}', 
-					'#{origin_pic}', '#{origin_hash}')"
+		sql = "INSERT INTO tb_camera_config (build_id, mac, seq, carpos, x, y, win_type)
+			VALUES ('#{build_id}', '#{mac}', #{seq}, '#{carpos}', '#{x}', '#{y}', '#{win_type}')"
+					#'#{origin_pic}', '#{origin_hash}')"
 		$log.info sql
 		con.query sql
 		con.query "commit"
@@ -110,7 +116,7 @@ class CameraController
 		set += ", carpos='#{carpos}'" if carpos
 		set += ", x='#{x}'" if x
 		set += ", y='#{y}'" if y
-		set += ", origin_pic='#{origin_pic}', origin_hash='#{origin_hash}'" if opic
+		set += ", origin_pic='#{origin_pic}', origin_hash='#{origin_hash}'" if opic != nil
 		where = "build_id='#{build_id}' and mac='#{mac}' and seq=#{seq}"
 		
 		sql = "UPDATE tb_camera_config set #{set} WHERE #{where}"

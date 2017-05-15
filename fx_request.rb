@@ -12,6 +12,7 @@ require 'iconv'
 require 'rchardet'
 require 'net/http/post/multipart'
 
+require_relative 'imgb'
 require_relative 'rkeys'
 require_relative 'fx_config'
 require_relative 'mysql2_conn'
@@ -1301,9 +1302,16 @@ class UpPic2Request < PublicRequest
 
 		if ori != nil	# set origin_pic
 			# set camera. origin_pic
-			op = CameraController::getCameraOrigin(con, building_id, mac, carpos)
+			op = CameraController::getCameraOrigin(@con, building_id, mac, carpos)
 			if op != nil
+				filename = "ori_pic/#{mac}#{ed}"
 
+				File.open(filename, "wb") do |f|
+					f.write(blob)
+				end
+
+				oahash = ImgBB::calculate_threshold(filename, 16)
+				CameraController::updateCameraOrogin(@con, building_id, mac, carpos, filename, ohash)
 			end
 		end
 	
@@ -1357,8 +1365,6 @@ class UpPic2Request < PublicRequest
 		build_id = building_id
 		carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
 		state = carinfo['ful'] if carinfo
-
-
 
 		dbg = CameraController::check_debug_overtime(@con, building_id, mac)
 		if cfg != nil && cfg["carpos"]
