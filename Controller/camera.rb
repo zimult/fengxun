@@ -17,6 +17,13 @@ class CameraController
 		row = rs.first
 		row
 	end
+	
+	def self.getCameraOriginByIndex(con, build_id, mac, index)
+		rs = con.query "SELECT origin_pic, origin_hash, carpos FROM tb_camera_config
+										WHERE build_id='#{build_id}' and mac='#{mac}' and seq=#{index}"
+		row = rs.first
+		row
+	end
 
 	def self.updateCameraOrogin(con, build_id, mac, carpos, opic, ohash)
 		con.query "UPDATE tb_camera_config set origin_pic='#{opic}', origin_hash='#{ohash}'
@@ -145,7 +152,9 @@ class CameraController
 	def self.showCameraConfig(con, build_id, mac)
 		list = []
 		rs = con.query "SELECT c.seq `index`, c.carpos, c.win_type, 
-						i.url imgUrl, i.ful state, i.carno carNumber, i.mac, TIMESTAMPDIFF(second, i.update_time, NOW()) tm
+						i.url imgUrl, i.ful state, i.carno carNumber, i.mac, 
+						TIMESTAMPDIFF(second, i.update_time, NOW()) tm,
+						c.origin_pic
 						FROM tb_camera_config c
 						INNER JOIN tb_build_carpos_info i ON i.build_id=c.build_id and i.mac=c.mac and i.carpos=c.carpos
 						WHERE c.build_id='#{build_id}' and c.mac='#{mac}'

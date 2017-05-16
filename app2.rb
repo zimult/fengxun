@@ -39,7 +39,41 @@ post '/listmac' do
 	json_ret
 end
 
+post '/sendBaseImage' do
+	#ret = respack
+	begin
 
+		req = SendBaseImageRequest.new(session, request, request.env, params)
+		ret = req.call()
+		#ret[:code] = 1 if ret[:result]
+	rescue => e
+		err = XError::format_error(e)
+		ret = {"result"=>"0"}
+		$log.error err
+	end
+
+	json_ret = jsonize(ret)
+	$log.info json_ret
+	json_ret
+end
+
+post '/checkBaseImage' do
+	#ret = respack
+	begin
+
+		req = CheckBaseImg2Request.new(session, request, request.env, params)
+		ret = req.call()
+		#ret[:code] = 1 if ret[:result]
+	rescue => e
+		err = XError::format_error(e)
+		ret = {"result"=>"0"}
+		$log.error err
+	end
+
+	json_ret = jsonize(ret)
+	$log.info json_ret
+	json_ret
+end
 
 
 post '/uploadpic' do

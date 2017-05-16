@@ -11,6 +11,7 @@ require 'redis'
 require 'iconv'
 require 'rchardet'
 require 'net/http/post/multipart'
+require 'fileutils'
 
 require_relative 'imgb'
 require_relative 'rkeys'
@@ -1152,6 +1153,67 @@ class ListMac2Request < PublicRequest
 
 		rt = list_mac(mac, build_id)
 		rt
+	end
+end
+
+class SendBaseImageRequest < PublicRequest
+	def do_call()
+		$log.info "SendBaseImageRequest:#{params}"
+		ret = {}
+		mac = params[:mac].force_encoding('utf-8')
+		build_id = $building_id
+		index = params[:index].to_i
+		imgUrl = params[:imgUrl].force_encoding('utf-8')
+		
+		idx = imgUrl.index('pic')
+		filename = imgUrl[idx..-1]
+
+		if File.exist?(filename)
+			ohash = ImgBB::calculate_threshold(filename, 16)
+			basename = File.basename(imgUrl)
+			cpath = "ori_pic/"
+			ofile = cpath + basename
+			FileUtils.cp(filename, cpath)
+			CameraController::updateCameraOrogin(@con, building_id, mac, carpos, ofile, ohash)
+			ret[:result] = 1
+			ret[:url] = "#{$myurl}/#{ofile}"
+		else
+			ret[:result] = 0
+		end
+		
+		ret
+	end
+end
+
+class CheckBaseImg2Request < PublicRequest
+	def do_call()
+		$log.info "checkBaseImg2Request:#{params}"
+		ret = {}
+		mac = params[:mac].force_encoding('utf-8')
+		build_id = $building_id
+		index = params[:index].to_i
+		
+		info = CameraController::getCameraOriginByIndex(@con, build_id, mac, index)
+		if info
+			ret[:result] = 1
+			ret[:carpos] = info['carpos']
+			ret[:imgUrl] = "#{$myurl}/#{info['origin_pic']}"
+			
+			carinfo = CarController::getCarposInfo(@con, build_id, mac, info['carpos'])
+			if carinfo && info['origin_hash'] != nil && carinfo['url'] != nil
+				ret[:currUrl] = carinfo['url']
+				idx = carinfo['url'].index('pic')
+				file = carinfo['url'][idx..-1]
+				chash = ImgBB::calculate_threshold(file, 16)
+				dis = ImgBB::haming_dist(chash, info['origin_hash'])
+				ret[:dis] = dis
+			else
+				ret[:currUrl] = ""
+				ret[:dis] = 9999
+			end
+		else
+			ret[:result] = 0
+		end
 	end
 end
 
