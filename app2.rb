@@ -48,7 +48,7 @@ post '/sendBaseImage' do
 		#ret[:code] = 1 if ret[:result]
 	rescue => e
 		err = XError::format_error(e)
-		ret = {"result"=>"0"}
+		ret = {"result"=>0}
 		$log.error err
 	end
 
@@ -66,7 +66,7 @@ post '/checkBaseImage' do
 		#ret[:code] = 1 if ret[:result]
 	rescue => e
 		err = XError::format_error(e)
-		ret = {"result"=>"0"}
+		ret = {"result"=>0}
 		$log.error err
 	end
 

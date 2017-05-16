@@ -1158,7 +1158,7 @@ end
 
 class SendBaseImageRequest < PublicRequest
 	def do_call()
-		$log.info "SendBaseImageRequest:#{params}"
+		$log1.info "SendBaseImageRequest:#{params}"
 		ret = {}
 		mac = params[:mac].force_encoding('utf-8')
 		build_id = $building_id
@@ -1167,14 +1167,14 @@ class SendBaseImageRequest < PublicRequest
 		
 		idx = imgUrl.index('pic')
 		filename = imgUrl[idx..-1]
-
+		$log1.info filename
 		if File.exist?(filename)
 			ohash = ImgBB::calculate_threshold(filename, 16)
 			basename = File.basename(imgUrl)
 			cpath = "ori_pic/"
 			ofile = cpath + basename
 			FileUtils.cp(filename, cpath)
-			CameraController::updateCameraOrogin(@con, building_id, mac, carpos, ofile, ohash)
+			CameraController::updateCameraOroginByIndex(@con, build_id, mac, index, ofile, ohash)
 			ret[:result] = 1
 			ret[:url] = "#{$myurl}/#{ofile}"
 		else
@@ -1187,7 +1187,7 @@ end
 
 class CheckBaseImg2Request < PublicRequest
 	def do_call()
-		$log.info "checkBaseImg2Request:#{params}"
+		$log1.info "checkBaseImg2Request:#{params}"
 		ret = {}
 		mac = params[:mac].force_encoding('utf-8')
 		build_id = $building_id

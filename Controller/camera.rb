@@ -31,6 +31,13 @@ class CameraController
 		con.query "commit"
 	end
 
+	def self.updateCameraOroginByIndex(con, build_id, mac, index, opic, ohash)
+		$log.info "#{ohash}, --#{ohash.length}"
+		con.query "UPDATE tb_camera_config set origin_pic='#{opic}', origin_hash='#{ohash}'
+					WHERE build_id='#{build_id}' and mac='#{mac}' and seq=#{index}"
+		con.query "commit"
+	end
+
 	def self.setCameraConfig(con, build_id, mac, win_type, window)
                   i=1
                 #$log1.info win_type

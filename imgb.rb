@@ -98,7 +98,7 @@ def self.calculate_threshold(img_fn, size)
 				rt << result
 			}
 
-			return rt
+			return rt[0]
 		rescue Exception => e
 			if $log
 				$log.error e.message
