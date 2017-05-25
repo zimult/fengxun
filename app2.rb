@@ -3,6 +3,7 @@ require_relative 'fx_request'
 require_relative 'fx_request_admin'
 require_relative 'xerror'
 
+
 get '/tlog' do
 	begin
 
@@ -38,6 +39,31 @@ post '/listmac' do
 	$log.info json_ret
 	json_ret
 end
+
+
+post '/lightIDToMac' do
+	#ret = respack
+	$log1.info params
+	begin
+
+		req = LightIDToMacRequest.new(session, request, request.env, params)
+		ret = req.call()
+		#ret[:code] = 1 if ret[:result]
+	rescue => e
+		err = XError::format_error(e)
+
+		#ret[:code] = 0
+		#ret[:error] = err[:message]
+		nl = []
+		ret = {"result"=>"0"}
+		$log1.error err
+	end
+
+	json_ret = jsonize(ret)
+	$log.info json_ret
+	json_ret
+end
+
 
 post '/sendBaseImage' do
 	#ret = respack

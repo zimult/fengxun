@@ -156,10 +156,17 @@ class CameraController
 		list
 	end
 
+        def self.getCarpos(con, build_id, mac, index)
+		rs = con.query "SELECT carpos FROM tb_camera_config 
+						WHERE  build_id='#{build_id}' and mac = '#{mac}' and seq='#{index}'"
+		row = rs.first
+		return row
+	end
+
 	def self.showCameraConfig(con, build_id, mac)
 		list = []
 		rs = con.query "SELECT c.seq `index`, c.carpos, c.win_type, 
-						i.url imgUrl, i.ful state, i.carno carNumber, i.mac, 
+						i.url imgUrl, i.ful state, i.carno carNumber, i.mac,i.dis, 
 						TIMESTAMPDIFF(second, i.update_time, NOW()) tm,
 						c.origin_pic
 						FROM tb_camera_config c

@@ -29,6 +29,17 @@ class LightController
 		con.query "commit"
 	end
 
+	def self.FindMacByID(con, build_id,device_area,device_id)
+		err = "and (timestampdiff(second, update_time, now()) < 60 )"
+		rs = con.query "SELECT mac FROM tb_build_light_info WHERE build_id='#{build_id}' and major=#{device_area} and minor=#{device_id} #{err}"
+		row = rs.first
+		if row
+			return row['mac'].force_encoding('utf-8')
+		else
+			return nil
+		end
+	end
+
 	def self.saveLightInfo(con, lightinfo)
 		build_id = lightinfo[:build_id]
 		major = lightinfo[:major].to_i

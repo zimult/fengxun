@@ -42,8 +42,22 @@ class CarController
 		con.query "commit"
 		end
 	end
+         
+	def self.updateDis(con, build_id, mac, carpos, major, dis)
+	    rs = con.query "SELECT  url FROM tb_build_carpos_info
+						WHERE build_id='#{build_id}' and mac = '#{mac}' and carpos = '#{carpos}'"
+	    row = rs.first
+	    if row
+	   
+		sql = "UPDATE tb_build_carpos_info SET dis='#{dis}'
+						WHERE  build_id='#{build_id}' and mac='#{mac}' and carpos='#{carpos}'"
+			
+			con.query sql
+			con.query "commit"
+	    end
+	end
 	
-	def self.updateCarposInfo(con, build_id, mac, carpos, major, floor_num, carno, url, ful)
+	def self.updateCarposInfo(con, build_id, mac, carpos, major, floor_num, carno, url, ful,dis)
 		rs = con.query "SELECT ful, carno, carno_his, url FROM tb_build_carpos_info
 						WHERE build_id='#{build_id}' and mac = '#{mac}' and carpos = '#{carpos}'"
               #
@@ -55,9 +69,9 @@ class CarController
 			#ful = 0
 			#ful = 1 if carno && carno.length > 1
 			sql = "INSERT INTO tb_build_carpos_info
-						(build_id, major, mac, carpos, update_time, carno, ful, url, carno_his)
+						(build_id, major, mac, carpos, update_time, carno, ful, url, carno_his,dis)
 						VALUES ('#{build_id}', #{major}, '#{mac}', '#{carpos}', current_timestamp,
-						'#{carno}', #{ful}, '#{url}', '#{hs}')"
+						'#{carno}', #{ful}, '#{url}', '#{hs}','#{dis}')"
 			con.query sql
 			con.query "commit"
 			return nil, 1
@@ -94,13 +108,14 @@ class CarController
 
 			sql = "UPDATE tb_build_carpos_info SET mac='#{mac}',
 						carno='#{fact_carno}', ful=#{ful}, url='#{url}', carno_his='#{ch}',
-						update_time=current_timestamp
+						update_time=current_timestamp,dis='#{dis}'
 						WHERE  build_id='#{build_id}' and mac='#{mac}' and carpos='#{carpos}'"
 			#$log.info sql if major == 3 && carpos == '03'
 			con.query sql
 			con.query "commit"
 			chg = 0
-			chg = 1 if carno_store != fact_carno
+			
+			chg = 1 if carno_store != fact_carno #&& fact_carno.length > 1
 			
 			return fact_carno, chg
 		end
@@ -113,6 +128,8 @@ class CarController
 		row = rs.first
 		return row
 	end
+	
+	
 	
 	def self.totCar(con, build_id, che, floor, ran)
 		if che != nil

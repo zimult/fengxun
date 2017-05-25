@@ -12,6 +12,7 @@ require 'iconv'
 require 'rchardet'
 require 'net/http/post/multipart'
 require 'fileutils'
+require 'rmagick'
 
 require_relative 'imgb'
 require_relative 'rkeys'
@@ -926,7 +927,7 @@ class LightParamRequest < PublicRequest
 		lightinfo[:lst] = lst
 		lightinfo[:errcode] = errcode
 
-		#$log.info "----- LightParamRequest do_save build_id:#{build_id}, major:#{major}, mac:#{mac}, pm:#{pm}"
+		#$log1.info "----- LightParamRequest do_save build_id:#{build_id}, major:#{major}, mac:#{mac}, pm:#{pm}"
 		LightController::saveLightInfo(con, lightinfo)
 	end
 
@@ -1028,14 +1029,14 @@ class LightParamRequest < PublicRequest
 		ret[:update_flag] = update_flag
 		str += update_flag.to_s
 		str += ','
-		#$log.info str.length
+		#$log1.info str
 		str
 		#ret
 		
 	end
 	
 	def do_call()
-		#$log.info "LightParamRequest:#{params}"
+		#$log1.info "LightParamRequest:#{params}"
 		#$log.info params.class
 		info = JSON.parse(params[:param], {:symbolize_names=>true})
 
@@ -1156,6 +1157,25 @@ class ListMac2Request < PublicRequest
 	end
 end
 
+
+class LightIDToMacRequest < PublicRequest
+      def do_call()
+		ret = {}
+		build_id = $building_id
+		device_area = params[:device_area]
+		device_id = params[:device_id]
+		mac = LightController::FindMacByID(@con,build_id,device_area,device_id)
+		if mac != nil
+		ret[:result] = 1
+		ret[:mac] = mac
+		else
+		ret[:result] = 0
+		end
+		ret
+	end
+end
+
+
 class SendBaseImageRequest < PublicRequest
 	def do_call()
 		$log1.info "SendBaseImageRequest:#{params}"
@@ -1169,6 +1189,11 @@ class SendBaseImageRequest < PublicRequest
 		filename = imgUrl[idx..-1]
 		$log1.info filename
 		if File.exist?(filename)
+			img =  Magick::Image.read(filename).first  
+			width = img.columns.to_i  
+			height = img.rows.to_i
+			thumb = img.crop(160,0,width-320, height-140)  
+			thumb.write(filename)
 			ohash = ImgBB::calculate_threshold(filename, 16)
 			basename = File.basename(imgUrl)
 			cpath = "ori_pic/"
@@ -1200,12 +1225,18 @@ class CheckBaseImg2Request < PublicRequest
 			ret[:imgUrl] = "#{$myurl}/#{info['origin_pic']}"
 			
 			carinfo = CarController::getCarposInfo(@con, build_id, mac, info['carpos'])
+			#$log.info carinfo
 			if carinfo && info['origin_hash'] != nil && carinfo['url'] != nil
 				ret[:currUrl] = carinfo['url']
 				idx = carinfo['url'].index('pic')
 				file = carinfo['url'][idx..-1]
-				chash = ImgBB::calculate_threshold(file, 16)
-				dis = ImgBB::haming_dist(chash, info['origin_hash'])
+				if File.exist?(file)
+					chash = ImgBB::calculate_threshold(file, 16)
+					dis = ImgBB::haming_dist(chash, info['origin_hash'])
+				else
+					dis = 9999
+				end
+
 				ret[:dis] = dis
 			else
 				ret[:currUrl] = ""
@@ -1214,6 +1245,8 @@ class CheckBaseImg2Request < PublicRequest
 		else
 			ret[:result] = 0
 		end
+
+		ret
 	end
 end
 
@@ -1424,9 +1457,58 @@ class UpPic2Request < PublicRequest
 		$log.info "-------------------- tc 4 cost:#{cost}" if cost > 0.013
 =end
 		state = 0
+		sta = 0
+		sta1 = 0
+		sta2 = 0
+		sta3 = 0
 		build_id = building_id
-		carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
-		state = carinfo['ful'] if carinfo
+		if cfg != nil && cfg["carpos"]
+			win_type = cfg["win_type"]
+			#$log1.info "---------------------win_type:#{win_type}-------------------------------------"
+			if win_type == '1'
+
+				 carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				 state = carinfo['ful'] if carinfo
+		        elsif win_type == '3'
+				 cp = nil
+				 index = 1
+				 cp = CameraController::getCarpos(@con, build_id, mac, index)
+				 carpos = cp["carpos"] if cp && cp["carpos"]
+				 carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				 sta1 = carinfo['ful'].to_i if carinfo
+				 cp = nil
+				 index =2
+				 cp = CameraController::getCarpos(@con, build_id, mac,index)
+				 carpos = cp["carpos"] if cp && cp["carpos"]
+				 carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				 sta2 = carinfo['ful'].to_i if carinfo
+				 sta = sta1 + sta2 *2
+				 state = sta.to_s
+			elsif win_type == '7'
+				  cp = nil
+				  index = 1	
+				  cp = CameraController::getCarpos(@con, build_id, mac, index)
+				  carpos = cp["carpos"] if cp && cp["carpos"]
+				  carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				  sta1 = carinfo['ful'].to_i if carinfo
+				  cp = nil
+				  index = 2
+				  cp = CameraController::getCarpos(@con, build_id, mac, index)
+				  carpos = cp["carpos"] if cp && cp["carpos"]
+				  carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				  sta2 = carinfo['ful'].to_i if carinfo
+				  cp = nil
+				  index = 3
+				  cp = CameraController::getCarpos(@con, build_id, mac, index)
+				  carpos = cp["carpos"] if cp && cp["carpos"]
+				  carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				  sta3 = carinfo['ful'].to_i if carinfo
+				  sta = sta1 + sta2 *2 + sta3 * 4
+				  state = sta.to_s
+			end
+		end
+		#carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+		#state = carinfo['ful'] if carinfo
 
 		dbg = CameraController::check_debug_overtime(@con, building_id, mac)
 		if cfg != nil && cfg["carpos"]
@@ -1462,7 +1544,7 @@ class UpPic2Request < PublicRequest
 			floor_id = FloorController::FindIDByNum(@con, building_id, floor_num)
 			upload_s(building_id, floor_id, major, carpos, ful, fact_carno, filename)
 		end
-
+		$log.info "------ uploadpic carpos:#{carpos} mac:#{mac} done."
 		return ret
 	end
 end

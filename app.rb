@@ -190,7 +190,7 @@ post '/uploadpic2' do
 	end
 
 	#json_ret = jsonize(ret)
-	$log.info "uploadpic ret:#{ret}"
+	#$log.info "uploadpic ret:#{ret}"
 	ret
 end
 
@@ -208,7 +208,7 @@ post '/update/postfile' do
 	end
 
 	json_ret = jsonize(ret)
-	$log.info "uploadpic ret:#{json_ret}"
+	#$log.info "postfile ret:#{json_ret}"
 	json_ret
 end
 
