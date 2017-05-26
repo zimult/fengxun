@@ -927,8 +927,10 @@ class LightParamRequest < PublicRequest
 		lightinfo[:lst] = lst
 		lightinfo[:errcode] = errcode
 
-		#$log1.info "----- LightParamRequest do_save build_id:#{build_id}, major:#{major}, mac:#{mac}, pm:#{pm}"
+		ts = Time.now.to_f	
 		LightController::saveLightInfo(con, lightinfo)
+		te = Time.now.to_f	
+		$log1.info "----- LightParamRequest do_save build_id:#{build_id}, major:#{major}, mac:#{mac}, pm:#{pm} cost:#{te-ts}"
 	end
 
 	def get_ret(build_id, major, mac)

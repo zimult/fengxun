@@ -41,7 +41,7 @@ def upload_s(building_id, floor_id, major, carpos, ful, fact_carno, filename)
 			"ful" => ful,
 			"carNumber" => fact_carno
 
-                    $log.info "+++++++++++++++++upload pic+++++++++++++++++++++"
+                    #$log.info "+++++++++++++++++upload pic+++++++++++++++++++++"
 		res = Net::HTTP.start(url.host, url.port) do |http| 
 			response = http.request(req)
 			#$log1.info response
@@ -94,10 +94,11 @@ end
 def deal_data(con, rd)
 begin
 	ts = Time.now.to_f
-	$log.info "---- deal_data start."
+	#$log.info "---- deal_data start."
 	rs = con.query "select build_id, major, mac, carpos, url, ful, carno_his, carno,newpic 
 						FROM tb_build_carpos_info
-						WHERE newpic > 0 and rd = #{rd}"
+						WHERE newpic > 0
+						and rd = #{rd}"
 	cnt = 0
 	rs.each{|row|
 		cnt += 1
@@ -131,7 +132,7 @@ begin
 			thumb.write(cal_filename)
 
 			t2 = Time.now.to_f
-			$log.info "++++++++++++++++++ crop - url:#{url} cost:#{t2-t1}"
+			#$log.info "++++++++++++++++++ crop - url:#{url} cost:#{t2-t1}" if t2-t1 > 0.1
 			t1 = t2
 
 			# compare with origin_pic
@@ -144,15 +145,15 @@ begin
 				ful = 1 if dis > $fx_picdiff
 				CarController::updateDis(con, build_id, mac, carpos, major, dis)
 				t2 = Time.now.to_f
-				$log.info "~~~~~~ check pic diff - dis:#{dis},last_ful:#{last_ful},ful:#{ful} cost:#{t2-t1}"
+				#$log.info "~~~~~~ check pic diff - dis:#{dis},last_ful:#{last_ful},ful:#{ful} cost:#{t2-t1}"
 				t2 = t1
 			end
 
 			if ful == 1
-				#$log.info "----------- knum pic:#{file}"
+				##$log.info "----------- knum pic:#{file}"
 				state, cardno, nColor, carColor = knum(file)
 				t2 = Time.now.to_f
-				$log.info "----------- knum pic:#{file} return cardno:#{cardno} cost:#{t2-t1}"
+				#$log.info "----------- knum pic:#{file} return cardno:#{cardno} cost:#{t2-t1}"
 				t2 = t1
 			else
 				state = 0
@@ -163,7 +164,7 @@ begin
 					dis = 0 if dis == nil
 			chg = 0
 			chg = 1 if last_ful != ful #|| last_carno != cardno
-			$log.info "*******************chg:#{chg}"
+			#$log.info "*******************chg:#{chg}"
 			if chg == 1
 				#ful = 1 if fact_carno.length > 1
 				#floor_id = FloorController::FindIDByNum(con, build_id, floor_num)
@@ -177,7 +178,7 @@ begin
 					floor_id = mr['floor_id']
 					upload_s(build_id, floor_id, major, carpos, ful, fact_carno, filename)
 					t2 = Time.now.to_f
-					$log.info "uploads data------------ #{build_id},#{major},#{carpos},#{ful} cost:#{t2-t1}"
+					#$log.info "uploads data------------ #{build_id},#{major},#{carpos},#{ful} cost:#{t2-t1}"
 					t2 = t1
 					#$log.info "+++++++ upload_s ------------"
 				end
@@ -189,7 +190,7 @@ begin
 				fact_carno, chg = CarController::updateCarposInfo(
 					con, build_id, mac, carpos, major, -9999, cardno, url, ful,dis)
 				t2 = Time.now.to_f
-				$log.info "------- updateCarposInfo return #{carpos}, mac:#{mac}, carpos:#{carpos}, major:#{major}, #{fact_carno} cost:#{t2-t1}"
+				#$log.info "------- updateCarposInfo return #{carpos}, mac:#{mac}, carpos:#{carpos}, major:#{major}, #{fact_carno} cost:#{t2-t1}"
 				t2 = t1
 			else
 				fact_carno = cardno
@@ -204,7 +205,7 @@ begin
 					floor_id = mr['floor_id']
 					upload_s(build_id, floor_id, major, carpos, ful, fact_carno, filename)
 					t2 = Time.now.to_f
-					$log.info "uploads_s data------------ #{build_id},#{major},#{carpos},#{ful} cost:#{t2-t1}"
+					#$log.info "uploads_s data------------ #{build_id},#{major},#{carpos},#{ful} cost:#{t2-t1}"
 				end
 			end
 		end
@@ -213,7 +214,7 @@ begin
 			WHERE build_id='#{build_id}' and mac='#{mac}' and carpos='#{carpos}'"	
 		con.query "commit"
 
-		$log.info "++++++++++++++++++ deal end - url:#{url}"
+		#$log.info "++++++++++++++++++ deal end - url:#{url}"
 	}
 	te = Time.now.to_f
 	$log.info "---- deal_data done #{cnt} cost:#{te - ts}."
@@ -235,7 +236,7 @@ end
 con = MysqlConn2::get_conn
 
 EM.run{
-	EM.add_periodic_timer(0) {
+	EM.add_periodic_timer(1) {
 		deal_data(con, $rd)
 	}
 }

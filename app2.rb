@@ -121,7 +121,7 @@ post '/uploadpic' do
 	end
 
 	#json_ret = jsonize(ret)
-	$log.info "uploadpic ret:#{ret}, #{ret.class}"
+	#$log.info "uploadpic ret:#{ret}, #{ret.class}"
 	ret
 end
 

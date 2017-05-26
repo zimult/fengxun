@@ -51,19 +51,20 @@ class LightController
 
 		#floor_num = getFloorNumByMajor(build_id, major)
 
-		rs = con.query "SELECT tmp FROM tb_build_light_info 
-				where build_id='#{build_id}' and major=#{major} and minor=#{minor}"
+		rs = con.query "SELECT tmp, lst, timestampdiff(second, update_time, now()) tm  
+					FROM tb_build_light_info 
+					where build_id='#{build_id}' and major=#{major} and minor=#{minor}"
 		row = rs.first
 		raise XError.new(506, 'no light found') if row == nil
 
-		sql = "UPDATE tb_build_light_info SET mac='#{mac}', tmp=#{tmp}, lst=#{lst}, errcode=#{errcode}, update_time=current_timestamp
-			WHERE build_id='#{build_id}' and major=#{major} and minor=#{minor}"
+		if row['tmp'].to_i != tmp || row['lst'].to_i != lst || row['tm'].to_i > 5
 
-		#$log.info sql
-		con.query sql
-		con.query "commit"
+			sql = "UPDATE tb_build_light_info SET mac='#{mac}', tmp=#{tmp}, lst=#{lst}, errcode=#{errcode}, update_time=current_timestamp
+				WHERE build_id='#{build_id}' and major=#{major} and minor=#{minor}"
 
-		# add tb_build_light_info_log
+			con.query sql
+			con.query "commit"
+		end
 	end
 
 	def self.getSetting(con, build_id, major)
