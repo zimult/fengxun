@@ -4,7 +4,7 @@
 
 source ~/.profile
 
-#source ~/.bash_profile
+source ~/.bashrc
 
 source /etc/profile
 

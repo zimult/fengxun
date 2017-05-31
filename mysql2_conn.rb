@@ -3,7 +3,7 @@ require 'mysql2'
 
 $mmDBHost = '127.0.0.1'
 $mmDBUser = 'root'
-$mmDBPasswd = 'star'
+$mmDBPasswd = 'beefind'
 $mmDBDatabase = 'beefind'
 
 class MysqlConn2
@@ -12,7 +12,7 @@ class MysqlConn2
 	def self.get_conn()
 
 		if @con == nil
-			@con = Mysql2::Client.new(:host => $mmDBHost , :username => $mmDBUser, :password => $mmDBPasswd, :port => 33006,
+			@con = Mysql2::Client.new(:host => $mmDBHost , :username => $mmDBUser, :password => $mmDBPasswd, :port => 3306,
 				:database => $mmDBDatabase, :flags => Mysql2::Client::MULTI_STATEMENTS, :reconnect => true)
 
 		end
