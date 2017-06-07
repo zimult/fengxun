@@ -4,14 +4,15 @@
 
 source ~/.profile
 
-#source ~/.bash_profile
+source ~/.bashrc
 
 source /etc/profile
 
 #############################
 cd "/var/www/fx/pic"
 
-cnt1=$(ps -ef | grep ruby | grep "webs" | wc -l)
-if [ $cnt1 -lt 1 ]; then
-	sudo nohup ./web1 &
-fi
+#cnt1=$(ps -ef | grep ruby | grep "dpic" | wc -l)
+#if [ $cnt1 -lt 1 ]; then
+        sudo nohup ./web1 8422 &
+        sudo nohup ./web1 8423 &
+#fi

@@ -76,15 +76,15 @@ def self.calculate_threshold(img_fn, size)
 				pixels = img.export_pixels(0, 0, cols, rows, "I").map { |p| p / 256 }
 
 				total_pixels = pixels.size
-				p total_pixels
-				p pixels
+				#p total_pixels
+				#p pixels
 
 				#avg_pixels = sum(pixels)
 				sum = 0
 				pixels.each { |a| sum+=a }
-				p sum
+				#p sum
 				avg = sum / total_pixels
-				p avg
+				#p avg
 
 				result = ''
 				pixels.each {|p|

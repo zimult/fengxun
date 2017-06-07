@@ -1411,17 +1411,17 @@ class UpPic2Request < PublicRequest
 				CameraController::updateCameraOrogin(@con, building_id, mac, carpos, filename, ohash)
 			end
 		end
-	
-		tm = Time.new
-		tf = tm.strftime('%H')
-		tmf = tm.strftime('%H%M%S')
 
-		filename = "pic/#{tf}/#{mac}_#{tmf}#{ed}"
+		#tm = Time.new
+		#tf = tm.strftime('%H')
+		#tmf = tm.strftime('%H%M%S')
+		#filename = "pic/#{tf}/#{mac}_#{tmf}#{ed}"
+		filename = "pic/#{mac}#{ed}"
 
 		File.open(filename, "wb") do |f|
 			f.write(blob)
 		end
-		filename2 = filename.gsub('.jpg', '.txt')
+		#filename2 = filename.gsub('.jpg', '.txt')
 
 		# 识别车牌
 		state = 0
@@ -1546,7 +1546,8 @@ class UpPic2Request < PublicRequest
 			floor_id = FloorController::FindIDByNum(@con, building_id, floor_num)
 			upload_s(building_id, floor_id, major, carpos, ful, fact_carno, filename)
 		end
-		$log.info "------ uploadpic carpos:#{carpos} mac:#{mac} done."
+		#$log1.info "------ uploadpic carpos:#{carpos} mac:#{mac} done."
+		$log1.info "ret:#{ret},mac:#{mac}"
 		return ret
 	end
 end

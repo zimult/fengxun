@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 $use_picdiff = 1	# 0
-$fx_picdiff = 60
+$fx_picdiff = 55
 
 $myurl = "http://192.168.0.100:8421"
 #$myurl = "http://51beefind.com:8421"
