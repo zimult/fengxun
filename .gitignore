@@ -51,3 +51,10 @@ build-iPhoneSimulator/
 
 # picture
 *.jpg
+*.lock
+/cal_pic/
+/log/
+nohup.out
+/paramset/
+/phpmyadmin
+/pic/
