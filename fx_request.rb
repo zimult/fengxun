@@ -713,7 +713,7 @@ class UpPicRequest < PublicRequest
 			ret = "KM#{index}#{state},X:0,Y:0,debug:#{dbg},win_type:7"
 		end
 
-		#$log1.info ret
+		$log1.info ret
 		return ret
 	end
 end
@@ -1038,7 +1038,7 @@ class LightParamRequest < PublicRequest
 	end
 	
 	def do_call()
-		#$log1.info "LightParamRequest:#{params}"
+		#log1.info "LightParamRequest:#{params}"
 		#$log.info params.class
 		info = JSON.parse(params[:param], {:symbolize_names=>true})
 
@@ -1155,6 +1155,7 @@ class ListMac2Request < PublicRequest
 		build_id = params[:building_id].force_encoding('utf-8') if params[:building_id]
 
 		rt = list_mac(mac, build_id)
+		#$log1.info "++++++++++++++++#{rt}+++++++++++++++"
 		rt
 	end
 end
@@ -1177,7 +1178,6 @@ class LightIDToMacRequest < PublicRequest
 	end
 end
 
-
 class SendBaseImageRequest < PublicRequest
 	def do_call()
 		$log1.info "SendBaseImageRequest:#{params}"
@@ -1185,25 +1185,46 @@ class SendBaseImageRequest < PublicRequest
 		mac = params[:mac].force_encoding('utf-8')
 		build_id = $building_id
 		index = params[:index].to_i
-		imgUrl = params[:imgUrl].force_encoding('utf-8')
-		
-		idx = imgUrl.index('pic')
+		#imgUrl = params[:imgUrl].force_encoding('utf-8')
+		imgUrl = "http://1n7o321771.51mypc.cn:12804/pic/#{mac}_#{index}.jpg"
+		$log1.info "++++++++++#{imgUrl}"
+
+		#info = CameraController::getCameraOriginByIndex(@con, build_id, mac, index)
+        #if info
+            #origin_pic = info['origin_pic']
+			#ori_jpg = origin_pic[0..origin_pic.length-4]+"jpg"
+		   # ori_bmp = origin_pic[0..origin_pic.length-4]+"bmp"
+		#end
+
+
+		idx = imgUrl.index('pic/')
+		$log1.info idx
 		filename = imgUrl[idx..-1]
-		$log1.info filename
+		ori_jpg = "ori_pic/"+imgUrl[idx+4..-1]
+		ori_bmp = "ori_pic/"+imgUrl[idx+4..-4]+"bmp"
+		#ori_filename = ori_file[0..ori_file.length-4]
+		 $log1.info "#{filename}:#{ori_jpg},ori_file:#{ori_bmp}"
+		 
 		if File.exist?(filename)
 			img =  Magick::Image.read(filename).first  
 			width = img.columns.to_i  
 			height = img.rows.to_i
 			thumb = img.crop(160,0,width-320, height-140)  
-			thumb.write(filename)
+			thumb.write(ori_jpg)
+			#thumb = Magick::Image.read(ori_jpg).first
+			w=thumb.columns
+			h= thumb.rows
+			thumb1 = thumb.resize(w*0.1,h*0.1)
+	        thumb1.write(ori_bmp)
 			ohash = ImgBB::calculate_threshold(filename, 16)
-			basename = File.basename(imgUrl)
-			cpath = "ori_pic/"
-			ofile = cpath + basename
-			FileUtils.cp(filename, cpath)
-			CameraController::updateCameraOroginByIndex(@con, build_id, mac, index, ofile, ohash)
+			#basename = File.basename(imgUrl)
+			#cpath = "ori_pic/"
+			#ofile = cpath + basename
+			#FileUtils.cp(filename, cpath)
+			opic = ori_bmp
+			CameraController::updateCameraOroginByIndex(@con, build_id, mac, index, opic, ohash)
 			ret[:result] = 1
-			ret[:url] = "#{$myurl}/#{ofile}"
+			ret[:url] = "#{$myurl}/#{ori_bmp}"
 		else
 			ret[:result] = 0
 		end
@@ -1224,7 +1245,9 @@ class CheckBaseImg2Request < PublicRequest
 		if info
 			ret[:result] = 1
 			ret[:carpos] = info['carpos']
-			ret[:imgUrl] = "#{$myurl}/#{info['origin_pic']}"
+			origin_pic = info['origin_pic']
+			ori_pic = origin_pic[0..origin_pic.length-4]+"jpg"
+			ret[:imgUrl] = "#{$myurl}/#{ori_pic}"
 			
 			carinfo = CarController::getCarposInfo(@con, build_id, mac, info['carpos'])
 			#$log.info carinfo
@@ -1390,6 +1413,7 @@ class UpPic2Request < PublicRequest
 				carpos = cfg["carpos"] if cfg && cfg["carpos"]
 			end
 		end
+		#$log1.info "#{cfg},++++++#{cfg_next}"
 		carpos = 'debug' if index == 0
 
 		if !blob
@@ -1491,7 +1515,7 @@ class UpPic2Request < PublicRequest
 				  index = 1	
 				  cp = CameraController::getCarpos(@con, build_id, mac, index)
 				  carpos = cp["carpos"] if cp && cp["carpos"]
-				  carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
+				   carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
 				  sta1 = carinfo['ful'].to_i if carinfo
 				  cp = nil
 				  index = 2
@@ -1509,10 +1533,12 @@ class UpPic2Request < PublicRequest
 				  state = sta.to_s
 			end
 		end
+		$log1.info "+++++#{win_type}++#{sta},#{sta1},#{sta2},#{sta3},#{mac}"
 		#carinfo = CarController::getCarposInfo(@con, build_id, mac, carpos)
 		#state = carinfo['ful'] if carinfo
 
 		dbg = CameraController::check_debug_overtime(@con, building_id, mac)
+		#$log1.info "++++++++++++++++++_____________#{cfg},#{cfg_next}____________"
 		if cfg != nil && cfg["carpos"]
                   	if cfg_next !=nil
 			   x = cfg_next["x"].to_i 
@@ -1547,7 +1573,7 @@ class UpPic2Request < PublicRequest
 			upload_s(building_id, floor_id, major, carpos, ful, fact_carno, filename)
 		end
 		#$log1.info "------ uploadpic carpos:#{carpos} mac:#{mac} done."
-		$log1.info "ret:#{ret},mac:#{mac}"
+		$log1.info "++++++++++++++++ret:#{ret},mac:#{mac}"
 		return ret
 	end
 end

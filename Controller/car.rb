@@ -102,9 +102,8 @@ class CarController
 				end
 			}
 			#ful = 0
-			#ful = 1 if fact_carno && fact_carno.length > 1
 			ch = his_list.join(',')
-			#$log.info "------ #{mac} updateCarposInfo: his:#{carno_his}, carno:#{carno}, fact:#{fact_carno}, newlist:#{ch}"
+			#$log1.info "------ #{mac} updateCarposInfo: his:#{carno_his}, carno:#{carno}, fact:#{fact_carno}, car_store:#{carno_store}"
 
 			sql = "UPDATE tb_build_carpos_info SET mac='#{mac}',
 						carno='#{fact_carno}', ful=#{ful}, url='#{url}', carno_his='#{ch}',
@@ -113,11 +112,11 @@ class CarController
 			#$log.info sql if major == 3 && carpos == '03'
 			con.query sql
 			con.query "commit"
-			chg = 0
+			#chg = 0
 			
-			chg = 1 if carno_store != fact_carno #&& fact_carno.length > 1
+			#chg = 1 if carno_store != fact_carno #&& fact_carno.length > 1
 			
-			return fact_carno, chg
+			return fact_carno   #, chg
 		end
 	end
 	

@@ -180,7 +180,7 @@ class LightSetModeRequest < AdminRequest
 	end
 
 	def do_call()
-		$log.info "LightSetModeRequest: #{params}"
+		$log1.info "LightSetModeRequest: #{params}"
 		raise XError.new(505, 'Wrong parameter') if !params[:user_id] || !params[:build_id] || !params[:set]
 #!params[:access_token] || 
 
@@ -402,7 +402,7 @@ class LightSystemRequest < AdminRequest
 	end
 
 	def do_call()
-		#$log.info "LightSystemRequest - params:#{params}"
+		$log1.info "LightSystemRequest - params:#{params}"
 		raise XError.new(505, 'Wrong parameter') if !params[:user_id] || !params[:build_id]
 
 		build_id = params[:build_id]
